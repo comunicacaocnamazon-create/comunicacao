@@ -44,12 +44,15 @@
   a{color:inherit}
   .wrap{max-width:1160px;margin:0 auto;padding:0 16px}
 
-  /* ---------- Header ---------- */
+  /* ---------- Cabeçalho fixo (header + busca + navegação) ---------- */
+  .sticky-top{
+    position:sticky;top:0;z-index:40;
+    background:linear-gradient(180deg,#ffffff 0%,#ffffff 82%,rgba(255,255,255,0) 100%);
+    box-shadow:0 1px 2px rgba(18,63,45,.06), 0 4px 14px rgba(18,63,45,.05);
+  }
   .site-header{
     background:var(--card);
     border-bottom:1px solid var(--line);
-    box-shadow:var(--shadow);
-    position:sticky;top:0;z-index:40;
   }
   .header-inner{
     display:flex;align-items:center;gap:16px;
@@ -110,16 +113,45 @@
   .sync[data-state="error"]{color:var(--red);border-color:#f6c6c6;background:var(--red-100)}
   .sync[data-state="error"] .dot{background:var(--red)}
 
+  /* ---------- Barra de navegação das seções ---------- */
+  .section-nav{
+    display:flex;gap:8px;max-width:1160px;margin:0 auto;
+    padding:8px 16px 10px;overflow-x:auto;scrollbar-width:none;
+  }
+  .section-nav::-webkit-scrollbar{display:none}
+  .nav-chip{
+    display:inline-flex;align-items:center;gap:7px;flex:0 0 auto;
+    text-decoration:none;font-size:.9rem;font-weight:700;color:var(--green-800);
+    background:#fff;border:1.5px solid var(--line);border-radius:999px;
+    padding:9px 14px;transition:border-color .15s ease, background .15s ease, transform .1s ease;
+  }
+  .nav-chip:hover{border-color:var(--green-400);background:var(--green-50)}
+  .nav-chip:active{transform:scale(.97)}
+  .nav-chip b{background:var(--green-100);color:var(--green-800);font-size:.74rem;padding:1px 8px;border-radius:999px}
+  .nav-chip.overdue-chip{color:var(--red)}
+  .nav-chip.overdue-chip b{background:var(--red-100);color:var(--red)}
+  .nav-chip.overdue-chip:hover{border-color:#f3c8c4;background:var(--red-100)}
+
   /* ---------- Sections ---------- */
   main{max-width:1160px;margin:0 auto;padding:12px 16px 40px}
-  section.block{margin-top:30px}
-  .block-head{display:flex;align-items:baseline;gap:10px;margin-bottom:14px;flex-wrap:wrap}
-  .block-head h2{margin:0;font-size:1.22rem;color:var(--green-900);display:flex;align-items:center;gap:8px}
+  html{scroll-behavior:smooth}
+  section.block{margin-top:30px;scroll-margin-top:150px}
+  .block-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+  .block-head h2{margin:0;font-size:1.22rem;color:var(--green-900);display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
   .count{
     background:var(--green-100);color:var(--green-800);
     font-size:.78rem;font-weight:700;padding:2px 10px;border-radius:999px;
   }
   .block-head .hint{color:var(--muted);font-size:.86rem;margin-left:auto}
+  .collapse-btn{
+    background:transparent;border:1.5px solid var(--line);color:var(--muted);
+    width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:1rem;line-height:1;
+    display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;
+    transition:background .15s ease, color .15s ease;
+  }
+  .collapse-btn:hover{background:var(--green-50);color:var(--green-800)}
+  .block.collapsed .grid{display:none}
+  .block.collapsed .block-head{margin-bottom:0}
 
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:18px}
 
@@ -300,6 +332,7 @@
 </head>
 <body>
 
+<div class="sticky-top">
 <header class="site-header">
   <div class="header-inner">
     <div class="brand">
@@ -330,25 +363,35 @@
   <span class="sync" id="syncStatus" data-state="local" role="status" aria-live="polite"><span class="dot"></span>⚙️ Modo local</span>
 </div>
 
+<nav class="section-nav" aria-label="Seções">
+  <a class="nav-chip" href="#availableBlock">📗 Disponíveis <b id="navAvailableCount">0</b></a>
+  <a class="nav-chip" href="#readingBlock">📖 Em leitura <b id="navReadingCount">0</b></a>
+  <a class="nav-chip overdue-chip" href="#overdueBlock">⚠️ Em atraso <b id="navOverdueCount">0</b></a>
+</nav>
+</div>
+
 <main>
   <section class="block" id="availableBlock" aria-label="Livros disponíveis">
     <div class="block-head">
-      <h2>📗 Livros disponíveis <span class="count" id="availableCount">0</span></h2>
+      <h2 id="availableTitle" title="Mostrar/ocultar seção">📗 Livros disponíveis <span class="count" id="availableCount">0</span></h2>
       <span class="hint">Escolha um e boa leitura!</span>
+      <button class="collapse-btn" data-collapse="availableBlock" aria-label="Ocultar seção Livros disponíveis">▲</button>
     </div>
     <div class="grid" id="availableGrid"></div>
   </section>
 
   <section class="block" id="readingBlock" aria-label="Em leitura">
     <div class="block-head">
-      <h2>📖 Em leitura <span class="count" id="readingCount">0</span></h2>
+      <h2 id="readingTitle" title="Mostrar/ocultar seção">📖 Em leitura <span class="count" id="readingCount">0</span></h2>
+      <button class="collapse-btn" data-collapse="readingBlock" aria-label="Ocultar seção Em leitura">▲</button>
     </div>
     <div class="grid" id="readingGrid"></div>
   </section>
 
   <section class="block overdue" id="overdueBlock" aria-label="Devoluções em atraso">
     <div class="block-head">
-      <h2>⚠️ Devoluções em atraso <span class="count" id="overdueCount">0</span></h2>
+      <h2 id="overdueTitle" title="Mostrar/ocultar seção">⚠️ Devoluções em atraso <span class="count" id="overdueCount">0</span></h2>
+      <button class="collapse-btn" data-collapse="overdueBlock" aria-label="Ocultar seção Devoluções em atraso">▲</button>
     </div>
     <div class="grid" id="overdueGrid"></div>
   </section>
@@ -369,13 +412,16 @@
     <div class="import-body">
       <p>
         Faça o upload da sua planilha (<b>.xlsx</b>, <b>.xls</b> ou <b>.csv</b>) com os livros.
+        <b>O importador soma os novos livros — os livros atuais são mantidos e nunca são apagados.</b>
+        Livros repetidos (mesmo título e autor) são ignorados, então você pode mandar tanto
+        uma planilha só com os livros novos quanto a lista completa.
         Colunas esperadas (o sistema identifica os cabeçalhos automaticamente):
         <code class="field">Título</code>, <code class="field">Autor</code>,
         <code class="field">Categoria</code> e <code class="field">Capa (URL)</code>.
-        Livros repetidos (mesmo título e autor) não serão duplicados.
       </p>
       <div class="import-actions">
         <button class="btn btn-outline" id="importBtn" type="button">📂 Escolher planilha</button>
+        <button class="btn btn-ghost" id="exportBtn" type="button">💾 Baixar livros atuais (backup)</button>
         <button class="btn btn-ghost" id="templateBtn" type="button">⬇️ Baixar modelo de planilha</button>
         <button class="btn btn-ghost-danger" id="resetBtn" type="button">Restaurar demonstração</button>
       </div>
@@ -779,6 +825,7 @@ function renderAvailableBooks() {
   const all = getBooks();
   const list = all.filter(b => calculateBookStatus(b) === 'available' && matchesSearch(b, q));
   document.getElementById('availableCount').textContent = list.length;
+  document.getElementById('navAvailableCount').textContent = list.length;
   if (all.length === 0) {
     grid.innerHTML = '<div class="empty"><span class="big">📚</span>Ainda não há livros cadastrados.<br>Use a opção <b>“Importar planilha de livros”</b> abaixo para carregar o catálogo.</div>';
     return;
@@ -812,6 +859,7 @@ function renderReadingBooks() {
     return s === 'reading' && matchesSearch(b, q);
   });
   document.getElementById('readingCount').textContent = list.length;
+  document.getElementById('navReadingCount').textContent = list.length;
   if (list.length === 0) {
     grid.innerHTML = '<div class="empty"><span class="big">📖</span>Nenhum livro em leitura no momento.</div>';
     return;
@@ -851,6 +899,7 @@ function renderOverdueBooks() {
     return s === 'overdue' && matchesSearch(b, q);
   });
   document.getElementById('overdueCount').textContent = list.length;
+  document.getElementById('navOverdueCount').textContent = list.length;
   if (list.length === 0) {
     grid.innerHTML = '<div class="empty"><span class="big">🎉</span>Nenhuma devolução em atraso. Tudo em dia!</div>';
     return;
@@ -880,6 +929,39 @@ function renderAll() {
   renderAvailableBooks();
   renderReadingBooks();
   renderOverdueBooks();
+}
+
+/* =====================================================================
+   OCULTAR / MOSTRAR SEÇÕES
+   ===================================================================== */
+const COLLAPSE_PREFS_KEY = 'bdb_collapsed_v1';
+
+function setCollapsed(blockId, collapsed) {
+  const section = document.getElementById(blockId);
+  if (!section) return;
+  section.classList.toggle('collapsed', collapsed);
+  const btn = section.querySelector('.collapse-btn');
+  if (btn) {
+    btn.textContent = collapsed ? '▼' : '▲';
+    btn.setAttribute('aria-label', (collapsed ? 'Mostrar' : 'Ocultar') + ' seção');
+  }
+  // salva preferência local
+  let prefs = {};
+  try { prefs = JSON.parse(safeStore.get(COLLAPSE_PREFS_KEY)) || {}; } catch (e) {}
+  prefs[blockId] = collapsed;
+  safeStore.set(COLLAPSE_PREFS_KEY, JSON.stringify(prefs));
+}
+function toggleSection(blockId) {
+  const section = document.getElementById(blockId);
+  if (!section) return;
+  setCollapsed(blockId, !section.classList.contains('collapsed'));
+}
+function restoreCollapsePrefs() {
+  let prefs = {};
+  try { prefs = JSON.parse(safeStore.get(COLLAPSE_PREFS_KEY)) || {}; } catch (e) {}
+  ['availableBlock', 'readingBlock', 'overdueBlock'].forEach(id => {
+    if (prefs[id]) setCollapsed(id, true);
+  });
 }
 
 /* =====================================================================
@@ -1007,8 +1089,9 @@ function importBooks(rows) {
   renderAll();
   const res = document.getElementById('importResult');
   res.className = 'import-result ok';
-  res.textContent = 'Importação concluída: ' + added + ' livro(s) adicionado(s), ' +
-    skipped + ' repetido(s) ignorado(s), ' + invalid + ' linha(s) inválida(s).';
+  res.textContent = 'Concluído: ' + added + ' livro(s) novo(s) adicionado(s), ' +
+    skipped + ' repetido(s) ignorado(s), ' + invalid + ' linha(s) inválida(s). ' +
+    'Os livros atuais foram mantidos (total agora: ' + books.length + ').';
 }
 
 function parseCSV(text) {
@@ -1102,6 +1185,27 @@ function downloadTemplate() {
   }
 }
 
+// Exporta o catálogo atual como planilha (backup / conferência).
+function downloadCurrentBooks() {
+  const books = getBooks();
+  if (books.length === 0) {
+    toast('Não há livros para exportar ainda.');
+    return;
+  }
+  const rows = books.map(b => [b.title, b.author, b.category, b.cover || '']);
+  const header = ['Título', 'Autor', 'Categoria', 'Capa (URL)'];
+  const stamp = new Date().toISOString().slice(0, 10);
+  if (typeof XLSX !== 'undefined') {
+    const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Livros');
+    XLSX.writeFile(wb, 'livros_biblioteca_' + stamp + '.xlsx');
+  } else {
+    downloadText('livros_biblioteca_' + stamp + '.csv', toCSV([header, ...rows]));
+  }
+  toast('💾 Backup gerado com ' + books.length + ' livro(s).');
+}
+
 /* =====================================================================
    EVENTOS
    ===================================================================== */
@@ -1114,6 +1218,11 @@ document.addEventListener('click', (e) => {
   if (returnBtn) { openReturnModal(returnBtn.getAttribute('data-return')); return; }
   const closeBtn = e.target.closest('[data-close]');
   if (closeBtn) { closeModal(closeBtn.getAttribute('data-close')); return; }
+  const collapseBtn = e.target.closest('[data-collapse]');
+  if (collapseBtn) { toggleSection(collapseBtn.getAttribute('data-collapse')); return; }
+  // Clicar no título também alterna a seção
+  const titleEl = e.target.closest('.block-head h2');
+  if (titleEl) { toggleSection(titleEl.closest('section.block').id); return; }
   if (e.target.classList && e.target.classList.contains('backdrop')) { closeModal(e.target.id); }
 });
 
@@ -1139,6 +1248,7 @@ fileInput.addEventListener('change', () => {
   fileInput.value = '';
 });
 document.getElementById('templateBtn').addEventListener('click', downloadTemplate);
+document.getElementById('exportBtn').addEventListener('click', downloadCurrentBooks);
 document.getElementById('resetBtn').addEventListener('click', () => {
   if (confirm('Restaurar os dados de demonstração? Os dados locais e (se houver servidor) os dados compartilhados serão substituídos.')) {
     safeStore.remove(STORAGE_KEYS.books);
@@ -1161,6 +1271,7 @@ document.getElementById('resetBtn').addEventListener('click', () => {
    ===================================================================== */
 async function boot() {
   ensureSeeded();      // dados locais já disponíveis (preview/offline)
+  restoreCollapsePrefs();
   renderAll();
   await loadFromApi(); // se houver servidor, substitui pelos dados reais
   renderAll();
