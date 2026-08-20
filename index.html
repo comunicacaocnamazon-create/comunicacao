@@ -277,6 +277,13 @@
   .import-result{margin-top:12px;font-size:.9rem;padding:10px 14px;border-radius:10px;display:none}
   .import-result.ok{display:block;background:var(--green-100);color:var(--green-800)}
   .import-result.err{display:block;background:var(--red-100);color:var(--red)}
+  .update-toggle{
+    display:flex;align-items:flex-start;gap:10px;cursor:pointer;
+    font-size:.9rem;color:var(--ink);margin-top:12px;
+    padding:11px 14px;background:var(--green-50);border:1px solid var(--line);border-radius:10px;
+  }
+  .update-toggle input{width:18px;height:18px;flex:0 0 auto;margin-top:2px;accent-color:var(--green-600);cursor:pointer}
+  .update-toggle span{line-height:1.45}
   code.field{background:var(--green-50);border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-size:.84rem}
 
   /* ---------- Footer ---------- */
@@ -449,6 +456,10 @@
         <code class="field">Título</code>, <code class="field">Autor</code>,
         <code class="field">Categoria</code> e <code class="field">Capa (URL)</code>.
       </p>
+      <label class="update-toggle">
+        <input type="checkbox" id="updateExisting">
+        <span>🔄 Atualizar livros já existentes (muda categoria e capa dos livros que tiverem o mesmo título e autor)</span>
+      </label>
       <div class="import-actions">
         <button class="btn btn-outline" id="importBtn" type="button">📂 Escolher planilha</button>
         <button class="btn btn-ghost" id="exportBtn" type="button">💾 Baixar livros atuais (backup)</button>
@@ -1123,10 +1134,10 @@ function pickField(obj, aliases) {
   }
   return '';
 }
-function importBooks(rows) {
+function importBooks(rows, updateExisting) {
   const books = getBooks();
-  let added = 0, skipped = 0, invalid = 0;
-  const existing = new Set(books.map(b => norm(b.title) + '||' + norm(b.author)));
+  let added = 0, skipped = 0, updated = 0, invalid = 0;
+  const index = new Map(books.map(b => [norm(b.title) + '||' + norm(b.author), b]));
   for (const row of rows) {
     if (!row || typeof row !== 'object') { invalid++; continue; }
     const title = pickField(row, HEADER_ALIASES.title);
@@ -1135,13 +1146,24 @@ function importBooks(rows) {
     const category = pickField(row, HEADER_ALIASES.category) || 'Geral';
     const cover = pickField(row, HEADER_ALIASES.cover);
     const key = norm(title) + '||' + norm(author);
-    if (existing.has(key)) { skipped++; continue; }
-    books.push({
+    const existingBook = index.get(key);
+    if (existingBook) {
+      if (updateExisting) {
+        existingBook.category = category;
+        if (cover) existingBook.cover = cover;
+        updated++;
+      } else {
+        skipped++;
+      }
+      continue;
+    }
+    const nb = {
       id: 'b' + Date.now() + Math.random().toString(36).slice(2, 7),
       title: title, author: author || 'Desconhecido',
       category: category, cover: cover
-    });
-    existing.add(key);
+    };
+    books.push(nb);
+    index.set(key, nb);
     added++;
   }
   saveBooks(books);
@@ -1150,9 +1172,11 @@ function importBooks(rows) {
   renderAll();
   const res = document.getElementById('importResult');
   res.className = 'import-result ok';
-  res.textContent = 'Concluído: ' + added + ' livro(s) novo(s) adicionado(s), ' +
-    skipped + ' repetido(s) ignorado(s), ' + invalid + ' linha(s) inválida(s). ' +
-    'Os livros atuais foram mantidos (total agora: ' + books.length + ').';
+  let msg = 'Concluído: ' + added + ' livro(s) novo(s) adicionado(s)';
+  if (updated) msg += ', ' + updated + ' livro(s) atualizado(s)';
+  msg += ', ' + skipped + ' repetido(s) ignorado(s), ' + invalid + ' linha(s) inválida(s). ' +
+    'Total agora: ' + books.length + ' livro(s).';
+  res.textContent = msg;
 }
 
 function parseCSV(text) {
@@ -1228,7 +1252,8 @@ async function handleFile(file) {
     res.textContent = 'Nenhum livro encontrado na planilha. Verifique as colunas.';
     return;
   }
-  importBooks(rows);
+  const updateExisting = document.getElementById('updateExisting').checked;
+  importBooks(rows, updateExisting);
 }
 function downloadTemplate() {
   const header = ['Título', 'Autor', 'Categoria', 'Capa (URL)'];
@@ -1342,5 +1367,5 @@ async function boot() {
 }
 boot();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2e392016861e016',t:'MTc4NzI1MTY4Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2e3a00e9d062754',t:'MTc4NzI1MjI2Mg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
