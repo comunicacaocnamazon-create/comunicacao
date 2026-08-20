@@ -1,0 +1,11 @@
+# Dependências
+node_modules/
+.netlify/
+
+# Arquivos de ambiente e segredos
+.env
+.env.*
+
+# Arquivos temporários
+.DS_Store
+*.log

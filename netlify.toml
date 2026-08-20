@@ -1,0 +1,10 @@
+[build]
+  command = ""
+  publish = "."
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# A function "library" responde em /.netlify/functions/library
+# (sem rewrite necessário — usamos rotas por query/action).

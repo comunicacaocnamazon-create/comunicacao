@@ -1,0 +1,10 @@
+{
+  "name": "biblioteca-descanso",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Biblioteca de Descanso — CNA (Netlify Functions + Netlify Blobs)",
+  "dependencies": {
+    "@netlify/blobs": "^11.0.1"
+  }
+}
