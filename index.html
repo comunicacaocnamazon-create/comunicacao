@@ -99,6 +99,28 @@
     box-shadow:0 0 0 4px rgba(46,125,91,.14);
   }
   .search-box input::placeholder{color:#9aa8a0}
+  .category-box{
+    position:relative;flex:0 1 260px;min-width:0;
+  }
+  .category-box .icon{
+    position:absolute;left:14px;top:50%;transform:translateY(-50%);
+    color:var(--muted);pointer-events:none;font-size:1.05rem;z-index:1;
+  }
+  .category-box select{
+    width:100%;padding:13px 14px 13px 44px;
+    border:1.5px solid var(--line);border-radius:12px;
+    font-size:1rem;background:#fff;color:var(--ink);font-family:inherit;
+    appearance:none;-webkit-appearance:none;cursor:pointer;
+    transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  .category-box select:focus{
+    outline:none;border-color:var(--green-500);
+    box-shadow:0 0 0 4px rgba(46,125,91,.14);
+  }
+  .category-box .chev{
+    position:absolute;right:14px;top:50%;transform:translateY(-50%);
+    color:var(--muted);pointer-events:none;font-size:.8rem;
+  }
   .sync{
     display:inline-flex;align-items:center;gap:7px;flex:0 0 auto;
     font-size:.82rem;font-weight:600;color:var(--muted);
@@ -359,6 +381,13 @@
   <div class="search-box">
     <span class="icon" aria-hidden="true">🔎</span>
     <input type="search" id="search" placeholder="Pesquisar livro ou autor" aria-label="Pesquisar livro ou autor">
+  </div>
+  <div class="category-box">
+    <span class="icon" aria-hidden="true">🏷️</span>
+    <select id="categoryFilter" aria-label="Filtrar por categoria">
+      <option value="">Todas as categorias</option>
+    </select>
+    <span class="chev" aria-hidden="true">▼</span>
   </div>
   <span class="sync" id="syncStatus" data-state="local" role="status" aria-live="polite"><span class="dot"></span>⚙️ Modo local</span>
 </div>
@@ -815,6 +844,33 @@ function matchesSearch(book, q) {
          norm(book.author).includes(q) ||
          norm(book.category).includes(q);
 }
+function currentCategory() {
+  const el = document.getElementById('categoryFilter');
+  return el ? el.value : '';
+}
+function matchesCategory(book, cat) {
+  if (!cat) return true;
+  return norm(book.category) === norm(cat);
+}
+// Preenche o seletor de categorias com as categorias únicas dos livros,
+// preservando a seleção atual quando possível.
+function populateCategories() {
+  const el = document.getElementById('categoryFilter');
+  if (!el) return;
+  const prev = el.value;
+  const cats = Array.from(new Set(getBooks().map(b => (b.category || 'Geral').trim()).filter(Boolean)))
+    .sort((a, b) => a.localeCompare(b, 'pt-BR'));
+  const opts = ['<option value="">Todas as categorias</option>']
+    .concat(cats.map(c => '<option value="' + esc(c) + '">' + esc(c) + '</option>'));
+  el.innerHTML = opts.join('');
+  // tenta manter a seleção anterior se a categoria ainda existir
+  if (prev && cats.some(c => c === prev)) {
+    el.value = prev;
+  } else if (prev && !cats.some(c => c === prev)) {
+    // a categoria selecionada não existe mais: volta para "Todas"
+    el.value = '';
+  }
+}
 function noResultsMsg() {
   return '<div class="empty"><span class="big">🔍</span>Nenhum livro encontrado.</div>';
 }
@@ -822,8 +878,9 @@ function noResultsMsg() {
 function renderAvailableBooks() {
   const grid = document.getElementById('availableGrid');
   const q = searchQuery();
+  const cat = currentCategory();
   const all = getBooks();
-  const list = all.filter(b => calculateBookStatus(b) === 'available' && matchesSearch(b, q));
+  const list = all.filter(b => calculateBookStatus(b) === 'available' && matchesSearch(b, q) && matchesCategory(b, cat));
   document.getElementById('availableCount').textContent = list.length;
   document.getElementById('navAvailableCount').textContent = list.length;
   if (all.length === 0) {
@@ -853,10 +910,11 @@ function renderAvailableBooks() {
 function renderReadingBooks() {
   const grid = document.getElementById('readingGrid');
   const q = searchQuery();
+  const cat = currentCategory();
   const books = getBooks();
   const list = books.filter(b => {
     const s = calculateBookStatus(b);
-    return s === 'reading' && matchesSearch(b, q);
+    return s === 'reading' && matchesSearch(b, q) && matchesCategory(b, cat);
   });
   document.getElementById('readingCount').textContent = list.length;
   document.getElementById('navReadingCount').textContent = list.length;
@@ -893,10 +951,11 @@ function renderReadingBooks() {
 function renderOverdueBooks() {
   const grid = document.getElementById('overdueGrid');
   const q = searchQuery();
+  const cat = currentCategory();
   const books = getBooks();
   const list = books.filter(b => {
     const s = calculateBookStatus(b);
-    return s === 'overdue' && matchesSearch(b, q);
+    return s === 'overdue' && matchesSearch(b, q) && matchesCategory(b, cat);
   });
   document.getElementById('overdueCount').textContent = list.length;
   document.getElementById('navOverdueCount').textContent = list.length;
@@ -1086,6 +1145,7 @@ function importBooks(rows) {
   }
   saveBooks(books);
   syncBooks(books);
+  populateCategories();
   renderAll();
   const res = document.getElementById('importResult');
   res.className = 'import-result ok';
@@ -1210,6 +1270,7 @@ function downloadCurrentBooks() {
    EVENTOS
    ===================================================================== */
 document.getElementById('search').addEventListener('input', renderAll);
+document.getElementById('categoryFilter').addEventListener('change', renderAll);
 
 document.addEventListener('click', (e) => {
   const borrowBtn = e.target.closest('[data-borrow]');
@@ -1272,11 +1333,13 @@ document.getElementById('resetBtn').addEventListener('click', () => {
 async function boot() {
   ensureSeeded();      // dados locais já disponíveis (preview/offline)
   restoreCollapsePrefs();
+  populateCategories();
   renderAll();
   await loadFromApi(); // se houver servidor, substitui pelos dados reais
+  populateCategories();
   renderAll();
 }
 boot();
 </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2e32e2c7b6b64f6',t:'MTc4NzI0NzU5Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
