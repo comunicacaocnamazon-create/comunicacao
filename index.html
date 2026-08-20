@@ -175,11 +175,11 @@
   .block.collapsed .grid{display:none}
   .block.collapsed .block-head{margin-bottom:0}
 
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:18px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}
 
   /* ---------- Card ---------- */
   .book-card{
-    background:var(--card);border-radius:var(--radius);
+    background:var(--card);border-radius:12px;
     box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;
     border:1px solid var(--line);
     transition:transform .15s ease, box-shadow .15s ease;
@@ -187,25 +187,26 @@
   }
   .book-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
   @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-  .cover{aspect-ratio:2/2.9;background:#dbe6de;overflow:hidden;position:relative}
+  .cover{aspect-ratio:2/3;background:#dbe6de;overflow:hidden;position:relative}
   .cover img{width:100%;height:100%;object-fit:cover;display:block}
-  .info{padding:14px 14px 16px;display:flex;flex-direction:column;gap:8px;flex:1 1 auto}
+  .info{padding:9px 9px 10px;display:flex;flex-direction:column;gap:5px;flex:1 1 auto}
   .badge{
-    align-self:flex-start;font-size:.72rem;font-weight:700;letter-spacing:.02em;
-    padding:3px 10px;border-radius:999px;text-transform:uppercase;
+    align-self:flex-start;font-size:.6rem;font-weight:700;letter-spacing:.02em;
+    padding:2px 7px;border-radius:999px;text-transform:uppercase;
   }
   .badge-available{background:#dcfce7;color:#166534}
   .badge-reading{background:#dbeafe;color:#1d4ed8}
   .badge-overdue{background:var(--red-100);color:var(--red)}
-  .info h3{margin:0;font-size:1.02rem;line-height:1.28;color:var(--ink)}
-  .info .author{margin:0;font-size:.88rem;color:var(--green-700);font-weight:600}
-  .info .cat{margin:0;font-size:.78rem;color:var(--muted)}
-  .meta{margin:0;padding:0;list-style:none;font-size:.84rem;color:var(--ink);display:flex;flex-direction:column;gap:4px}
-  .meta li{display:flex;gap:6px}
+  .info h3{margin:0;font-size:.86rem;line-height:1.25;color:var(--ink)}
+  .info .author{margin:0;font-size:.74rem;color:var(--green-700);font-weight:600}
+  .info .cat{margin:0;font-size:.68rem;color:var(--muted)}
+  .meta{margin:0;padding:0;list-style:none;font-size:.72rem;color:var(--ink);display:flex;flex-direction:column;gap:3px}
+  .meta li{display:flex;gap:5px}
   .meta .k{color:var(--muted);flex:0 0 auto}
   .days-left{font-weight:700;color:var(--green-700)}
   .days-overdue{font-weight:700;color:var(--red)}
   .spacer{flex:1 1 auto}
+  .book-card .btn{min-height:34px;padding:7px 9px;font-size:.8rem;border-radius:9px;gap:6px}
 
   /* ---------- Buttons ---------- */
   .btn{
@@ -1341,5 +1342,5 @@ async function boot() {
 }
 boot();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2e32e2c7b6b64f6',t:'MTc4NzI0NzU5Nw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a2e392016861e016',t:'MTc4NzI1MTY4Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
